@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conveyance Calculator</title>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --bg-light: #f5f5f5;
+      --bg-white: #ffffff;
+      --text-color: #333333;
+      --font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-family); background-color: var(--bg-light); color: var(--text-color); line-height: 1.6; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1100px; margin: 30px auto; padding: 0 15px; }
+    .card { background-color: var(--bg-white); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; }
+    h2 { font-size: 1.3rem; margin-bottom: 15px; color: var(--primary-color); }
+    label { display: block; margin-bottom: 12px; font-size: 0.95rem; }
+    label input, label select { width: 100%; padding: 8px 10px; margin-top: 5px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; }
+    .diagnosis-grid { display: grid; grid-template-columns: auto 1fr; row-gap: 10px; column-gap: 12px; align-items: start; }
+    .diagnosis-grid input { margin-top: 3px; transform: scale(1.2); }
+    .btn { grid-column: 1 / -1; background-color: var(--primary-color); color: #fff; border: none; border-radius: 8px; padding: 14px; font-size: 1.05rem; cursor: pointer; transition: background-color 0.3s ease; }
+    .btn:hover { background-color: #45a049; }
+    #results { grid-column: 1 / -1; }
+    #results p { background-color: var(--bg-white); border-radius: 8px; padding: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); margin-bottom: 12px; font-size: 1rem; }
+    #results p strong { color: var(--primary-color); }
+  </style>
+</head>
+<body>
+  <div class="grid">
+
+    <!-- Inputs Card -->
+    <div class="card">
+      <h2>Inputs</h2>
+      <label>Respiratory Rate<input type="number" id="respiratoryRate" placeholder="e.g. 16" min="0"></label>
+      <label>SpO₂ (%)<input type="number" id="spo2" placeholder="e.g. 98" min="0" max="100"></label>
+      <label>Systolic BP (mmHg)<input type="number" id="sbp" placeholder="e.g. 120" min="0"></label>
+      <label>Diastolic BP (mmHg)<input type="number" id="dbp" placeholder="e.g. 80" min="0"></label>
+      <label>Pulse Rate (bpm)<input type="number" id="pulseRate" placeholder="e.g. 75" min="0"></label>
+      <label>Consciousness Level<select id="consciousness">
+        <option value="0">Alert</option>
+        <option value="3">New Confusion</option>
+      </select></label>
+      <label>Temperature (°C)<input type="number" id="temperature" placeholder="e.g. 36.5" step="0.1"></label>
+      <label>Oxygen Therapy<select id="oxygenTherapy">
+        <option value="0">No</option>
+        <option value="2">Yes</option>
+      </select></label>
+    </div>
+
+    <!-- P1 Diagnosis Card -->
+    <div class="card">
+      <h2>P1 High-Risk Diagnosis</h2>
+      <div class="diagnosis-grid">
+        <input type="checkbox" class="high-risk-checkbox" id="acute-mi"><label for="acute-mi">Acute Myocardial Infarction (Heart Attack)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="heat-stroke"><label for="heat-stroke">Heat Stroke (Body temp >40°C, altered mental state)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="persistent-seizures"><label for="persistent-seizures">Persistent Seizures (&gt;5 min)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="severe-asthma"><label for="severe-asthma">Severe Asthma Attack (Max therapy failure)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="severe-trauma"><label for="severe-trauma">Severe Trauma (Major bleeding)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="shock"><label for="shock">Shock (MAP &lt;65 mmHg)</label>
+        <input type="checkbox" class="high-risk-checkbox" id="acute-stroke"><label for="acute-stroke">Acute Stroke (Onset &lt;24h)</label>
+      </div>
+    </div>
+
+    <!-- P2 Diagnosis Card -->
+    <div class="card">
+      <h2>P2 Medium-Risk Diagnosis</h2>
+      <div class="diagnosis-grid">
+        <input type="checkbox" class="medium-risk-checkbox" id="abdominal-pain"><label for="abdominal-pain">Abdominal Pain (Non-specific)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="allergic-reaction"><label for="allergic-reaction">Allergic Reaction/Angioedema (No airway risk)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="bronchial-asthma"><label for="bronchial-asthma">Bronchial Asthma (Mild-Moderate)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="chest-pain"><label for="chest-pain">Chest Pain (Atypical, low AMI risk)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="heat-exhaustion"><label for="heat-exhaustion">Heat Exhaustion (Not stroke)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="long-bone-fracture"><label for="long-bone-fracture">Long Bone Fracture (Stable)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="spinal-injury"><label for="spinal-injury">Spinal Injury (No deficit)</label>
+        <input type="checkbox" class="medium-risk-checkbox" id="syncope"><label for="syncope">Syncope (Isolated)</label>
+      </div>
+    </div>
+
+    <!-- Calculate Button -->
+    <button class="btn" type="button" onclick="calculateNEWS2Score()">Calculate</button>
+
+    <!-- Results -->
+    <div id="results">
+      <p><strong>NEWS2 Score:</strong> <span id="score">-</span></p>
+      <p><strong>Mean Arterial Pressure:</strong> <span id="map">-</span></p>
+      <p><strong>Risk Level:</strong> <span id="risk">-</span></p>
+    </div>
+  </div>
+
+  <script>
+    // Register service worker for PWA installation & offline
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.error('SW registration failed:', err));
+      });
+    }
+
+    function calculateNEWS2Score() {
+      const rr = +document.getElementById('respiratoryRate').value;
+      const spo2 = +document.getElementById('spo2').value;
+      const sbp = +document.getElementById('sbp').value;
+      const dbp = +document.getElementById('dbp').value;
+      const pr = +document.getElementById('pulseRate').value;
+      const level = +document.getElementById('consciousness').value;
+      const temp = +document.getElementById('temperature').value;
+      const oxy = +document.getElementById('oxygenTherapy').value;
+      let score = 0;
+      if (rr <= 8) score += 3;
+      else if (rr <= 11) score += 1;
+      else if (rr <= 20) score += 0;
+      else if (rr <= 24) score += 2;
+      else score += 3;
+      if (spo2 <= 91) score += 3;
+      else if (spo2 <= 93) score += 2;
+      else if (spo2 <= 94) score += 1;
+      else score += 0;
+      if (sbp <= 90) score += 3;
+      else if (sbp <= 100) score += 2;
+      else if (sbp <= 110) score += 1;
+      else if (sbp <= 219) score += 0;
+      else score += 3;
+      if (pr <= 40) score += 3;
+      else if (pr <= 50) score += 1;
+      else if (pr <= 90) score += 0;
+      else if (pr <= 110) score += 1;
+      else if (pr <= 130) score += 2;
+      else score += 3;
+      score += level;
+      if (temp <= 35) score += 3;
+      else if (temp <= 36) score += 1;
+      else if (temp <= 38) score += 0;
+      else if (temp <= 39) score += 1;
+      else score += 2;
+      score += oxy;
+      const mapVal = ((sbp + 2 * dbp) / 3).toFixed(1);
+      document.getElementById('map').innerText = mapVal;
+      const highChecked = document.querySelectorAll('.high-risk-checkbox:checked').length;
+      const medChecked = document.querySelectorAll('.medium-risk-checkbox:checked').length;
+      let risk = '';
+      if (highChecked > 0) risk = 'P1 (Highest)';
+      else if (medChecked > 0) risk = 'P2 (High)';
+      else if (score >= 7) risk = 'P1 (Highest)';
+      else if (score >= 5) risk = 'P2 (High)';
+      else risk = 'P3 (Low)';
+      document.getElementById('score').innerText = score;
+      document.getElementById('risk').innerText = risk;
+    }
+  </script>
+</body>
+</html>
